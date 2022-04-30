@@ -10,7 +10,6 @@ namespace CompareServices
         private readonly KeyClient _client;
         private readonly TokenCredential _tokenCredential;
         private int _keySize;
-        private Uri? _keyId;
 
         public KeyVaultHelper(Uri vaultUri, TokenCredential tokenCredential)
         {
@@ -22,20 +21,18 @@ namespace CompareServices
         {
             var key = await _client.CreateOctKeyAsync(new CreateOctKeyOptions(name, true) { KeySize = keySize });
             _keySize = keySize;
-            _keyId = key.Value.Id;
             return key;
         }
 
-        public async Task<EncryptResult> EncryptAsync(string textToEncrypt)
+        public async Task<EncryptResult> EncryptAsync(KeyVaultKey key, string textToEncrypt)
         {
-            var cryptoClient = new CryptographyClient(_keyId, _tokenCredential);
+            var cryptoClient = new CryptographyClient(key.Id, _tokenCredential);
             return await cryptoClient.EncryptAsync($"A{_keySize}CBC", Encoding.UTF8.GetBytes(textToEncrypt));
-
         }
 
-        public async Task<string> DecryptAsync(byte[] cipherText, byte[] iv)
+        public async Task<string> DecryptAsync(KeyVaultKey key, byte[] cipherText, byte[] iv)
         {
-            var cryptoClient = new CryptographyClient(_keyId, _tokenCredential);
+            var cryptoClient = new CryptographyClient(key.Id, _tokenCredential);
             var result = await cryptoClient.DecryptAsync(GetDecryptParameters(cipherText, iv));
             return Encoding.Default.GetString(result.Plaintext);
         }
