@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CompareServices
 {
-    public class KMSHelper
+    internal class KMSHelper
     {
         private readonly AmazonKeyManagementServiceClient _client;
 
